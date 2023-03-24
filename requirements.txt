@@ -1,0 +1,6 @@
+pytest
+sqlalchemy
+flask
+psycopg2-binary
+requests
+sqlalchemy_orm
