@@ -34,11 +34,15 @@ class Batch:
         return self.eta > other.eta
 
     def allocate(self, line: OrderLine):
+        print(f"Try allocate {line}")
         if self.can_allocate(line):
+            print(f"{line} can be allocated")
             self._allocations.add(line)
 
     def deallocate(self, line: OrderLine):
+        print(f"Try deallocate {line}")
         if line in self._allocations:
+            print(f"{line} can be deallocated")
             self._allocations.remove(line)
 
     @property
@@ -60,7 +64,9 @@ class OutOfStock(Exception):
 def allocate(line: OrderLine, batches: List[Batch]) -> str:
     try:
         batch = next(b for b in sorted(batches) if b.can_allocate(line))
+        print(f"Next batch is {batch.reference} with sku {batch.sku}")
         batch.allocate(line)
+        print(f"Batch with id {batch.reference} and sku {batch.sku} is successfully allocated")
         return batch.reference
     except StopIteration:
         raise OutOfStock(f"Out of stock for sku {line.sku}")

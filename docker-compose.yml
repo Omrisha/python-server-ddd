@@ -5,8 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    networks:
+      - allocation
     depends_on:
-      - db
+      - postgresql
     environment:
       - DB_HOST=postgresql
       - DB_PASSWORD=abc123
@@ -14,20 +16,17 @@ services:
       - ./:/code
     ports:
       - "5005:80"
-  db:
-    container_name: postgresql
-    image: postgres:latest
-    restart: always
+  postgresql:
+    image: postgres:13.4-alpine
     networks:
       - allocation
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: allocation
       POSTGRES_PASSWORD: abc123
       POSTGRES_DB: allocation
-      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "54321:5432"
+      - "5432:5432"
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
