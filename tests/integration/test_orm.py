@@ -2,7 +2,7 @@ import unittest
 
 from sqlalchemy import text
 
-import model
+from src.allocation.domain import model
 
 
 def test_order_line_mapper_can_load_lines(session):

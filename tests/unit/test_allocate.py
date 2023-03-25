@@ -1,9 +1,8 @@
-import unittest
 from datetime import datetime, timedelta
 
 import pytest as pytest
 
-from model import Batch, OrderLine, allocate, OutOfStock
+from src.allocation.domain.model import Batch, OrderLine, allocate, OutOfStock
 
 today = datetime.now()
 
@@ -55,10 +54,3 @@ def test_raises_out_stock_exception_if_cannot_allocate():
     with pytest.raises(OutOfStock, match="SMALL-FORK"):
         allocate(OrderLine("order2", "SMALL-FORK", 1), [batch])
 
-
-class MyTestCase(unittest.TestCase):
-    pass
-
-
-if __name__ == '__main__':
-    unittest.main()

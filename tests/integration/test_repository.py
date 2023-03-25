@@ -2,8 +2,8 @@ import unittest
 
 from sqlalchemy import text
 
-import model
-import repository
+from src.allocation.domain import model
+from src.allocation.adapters import repository
 
 
 def test_repository_can_save_a_batch(session):

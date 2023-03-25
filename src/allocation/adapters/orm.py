@@ -2,8 +2,8 @@ from sqlalchemy.orm import registry
 from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
 
-import model
-from model import OrderLine
+from src.allocation.domain import model
+from src.allocation.domain.model import OrderLine
 
 metadata = MetaData()
 

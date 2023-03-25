@@ -1,8 +1,6 @@
-import unittest
-
 from datetime import date
 
-from model import Batch, OrderLine
+from src.allocation.domain.model import Batch, OrderLine
 
 
 def make_batch_and_line(sku, batch_qty, line_qty):
@@ -45,10 +43,3 @@ def test_allocation_is_idempotent():
     batch.allocate(line)
     assert batch.available_quantity == 18
 
-
-class BatchesTests(unittest.TestCase):
-    pass
-
-
-if __name__ == '__main__':
-    unittest.main()
