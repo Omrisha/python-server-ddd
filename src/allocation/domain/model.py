@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
 
+from src.allocation.domain import events
+
 
 @dataclass(unsafe_hash=True)
 class OrderLine:
@@ -45,6 +47,9 @@ class Batch:
             print(f"{line} can be deallocated")
             self._allocations.remove(line)
 
+    def deallocate_one(self) -> OrderLine:
+        return self._allocations.pop()
+
     @property
     def allocated_quantity(self) -> int:
         return sum(line.qty for line in self._allocations)
@@ -57,24 +62,37 @@ class Batch:
         return self.sku == line.sku and self.available_quantity >= line.qty
 
 
-class OutOfStock(Exception):
-    pass
+class Product:
+    def __init__(self, sku: str, batches: [Batch], version_number: int = 0):
+        self.sku = sku
+        self.batches = batches
+        self.version_number = version_number
+        self.events = []
 
+    def allocate(self, line: OrderLine) -> str:
+        try:
+            batch = next(b for b in sorted(self.batches) if b.can_allocate(line))
+            print(f"Next batch is {batch.reference} with sku {batch.sku}")
+            batch.allocate(line)
+            self.version_number += 1
+            print(f"Batch with id {batch.reference} and sku {batch.sku} is successfully allocated")
+            return batch.reference
+        except StopIteration:
+            self.events.append(events.OutOfStock(line.sku))
 
-def allocate(line: OrderLine, batches: List[Batch]) -> str:
-    try:
-        batch = next(b for b in sorted(batches) if b.can_allocate(line))
-        print(f"Next batch is {batch.reference} with sku {batch.sku}")
-        batch.allocate(line)
-        print(f"Batch with id {batch.reference} and sku {batch.sku} is successfully allocated")
-        return batch.reference
-    except StopIteration:
-        raise OutOfStock(f"Out of stock for sku {line.sku}")
+    def deallocate(self, batch_ref: str, line: OrderLine):
+        try:
+            batch = next(b for b in sorted(self.batches) if b.reference == batch_ref)
+            batch.deallocate(line)
+            self.version_number += 1
+        except StopIteration:
+            self.events.append(events.OutOfStock(line.sku))
 
-
-def deallocate(line: OrderLine, batch: Batch):
-    try:
-        batch.deallocate(line)
-    except StopIteration:
-        raise OutOfStock(f"Out of stock for sku {line.sku}")
-
+    def change_batch_quantity(self, ref: str, qty: int):
+        batch = next(b for b in self.batches if b.reference == ref)
+        batch._purchased_quantity = qty
+        while batch.available_quantity < 0:
+            line = batch.deallocate_one()
+            self.events.append(
+                events.AllocationRequired(line.orderId, line.sku, line.qty)
+            )
