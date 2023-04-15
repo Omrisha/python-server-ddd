@@ -1,6 +1,29 @@
 version: '3.8'
 
 services:
+
+  redis_pubsub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: allocation-image
+    networks:
+      - allocation
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DB_HOST=postgres
+      - DB_PASSWORD=abc123
+      - REDIS_HOST=redis
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
+    entrypoint:
+      - python
+      - /src/allocation/entrypoints/redis_eventconsumer.py
+
   app:
     build:
       context: .
@@ -12,10 +35,23 @@ services:
     environment:
       - DB_HOST=postgresql
       - DB_PASSWORD=abc123
+      - API_HOST=api
+      - REDIS_HOST=redis
+      - PYTHONDONTWRITEBYTECODE=1
+      - FLASK_APP=allocation/entrypoints/flask_app.py
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
     volumes:
-      - ./:/code
+      - ./src:/src
+      - ./tests:/tests
+    entrypoint:
+      - flask
+      - run
+      - --host=0.0.0.0
+      - --port=80
     ports:
       - "5005:80"
+
   postgresql:
     image: postgres:13.4-alpine
     networks:
@@ -27,6 +63,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
+
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
@@ -38,6 +75,11 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "63791:6379"
 
 networks:
   allocation:

@@ -1,7 +1,12 @@
-from src.allocation.adapters import email
-from src.allocation.domain import model, events
+from typing import TYPE_CHECKING
+
+from src.allocation.adapters import email, redis_eventpublisher
+from src.allocation.domain import model, events, commands
 from src.allocation.domain.model import OrderLine
 from src.allocation.service_layer import unit_of_work
+
+if TYPE_CHECKING:
+    from . import unit_of_work
 
 
 class InvalidSku(Exception):
@@ -13,23 +18,23 @@ def is_valid_sku(sku, batches):
 
 
 def add_batch(
-        event: events.BatchCreated,
+        command: commands.CreateBatch,
         uow: unit_of_work.AbstractUnitOfWork
-) -> None:
+):
     with uow:
-        product = uow.products.get(sku=event.sku)
+        product = uow.products.get(sku=command.sku)
         if product is None:
-            product = model.Product(event.sku, batches=[])
+            product = model.Product(command.sku, batches=[])
             uow.products.add(product)
-        product.batches.append(model.Batch(event.ref, event.sku, event.qty, event.eta))
+        product.batches.append(model.Batch(command.ref, command.sku, command.qty, command.eta))
         uow.commit()
 
 
 def allocate(
-        event: events.AllocationRequired,
+        command: commands.Allocate,
         uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
-    line = OrderLine(event.order_id, event.sku, event.qty)
+    line = OrderLine(command.order_id, command.sku, command.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
@@ -49,22 +54,29 @@ def send_out_of_stock_notification(
 
 
 def deallocate(
-        event: events.DeallocationRequired,
+        command: commands.Deallocate,
         uow: unit_of_work.AbstractUnitOfWork
 ) -> None:
     with uow:
-        product = uow.products.get(sku=event.sku)
+        product = uow.products.get(sku=command.sku)
         if product is None:
-            raise InvalidSku(f"Invalid sku {event.sku}")
-        product.deallocate(event.ref, OrderLine(event.order_id, event.sku, event.qty))
+            raise InvalidSku(f"Invalid sku {command.sku}")
+        product.deallocate(command.ref, OrderLine(command.order_id, command.sku, command.qty))
         uow.commit()
 
 
 def change_batch_quantity(
-        event: events.BatchQuantityChanged,
+        command: commands.ChangeBatchQuantity,
         uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
-        product = uow.products.get_by_batch_ref(batch_ref=event.ref)
-        product.change_batch_quantity(ref=event.ref, qty=event.qty)
+        product = uow.products.get_by_batch_ref(batch_ref=command.ref)
+        product.change_batch_quantity(ref=command.ref, qty=command.qty)
         uow.commit()
+        
+
+def publish_allocated_event(
+        event: events.Allocated,
+        uow: unit_of_work.AbstractUnitOfWork,
+):
+    redis_eventpublisher.publish("line_allocated", event)

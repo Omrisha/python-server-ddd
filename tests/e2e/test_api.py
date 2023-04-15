@@ -1,7 +1,7 @@
 import pytest
 import requests as requests
 
-import config
+from src.allocation import config
 from tests.random_refs import random_batch_ref, random_sku, random_order_id
 
 

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
 
-from src.allocation.domain import events
+from src.allocation.domain import events, commands
 
 
 @dataclass(unsafe_hash=True)
@@ -75,6 +75,14 @@ class Product:
             print(f"Next batch is {batch.reference} with sku {batch.sku}")
             batch.allocate(line)
             self.version_number += 1
+            self.events.append(
+                events.Allocated(
+                    orderid=line.orderId,
+                    sku=line.sku,
+                    qty=line.qty,
+                    batchref=batch.reference,
+                )
+            )
             print(f"Batch with id {batch.reference} and sku {batch.sku} is successfully allocated")
             return batch.reference
         except StopIteration:
@@ -94,5 +102,5 @@ class Product:
         while batch.available_quantity < 0:
             line = batch.deallocate_one()
             self.events.append(
-                events.AllocationRequired(line.orderId, line.sku, line.qty)
+                commands.Allocate(line.orderId, line.sku, line.qty)
             )
