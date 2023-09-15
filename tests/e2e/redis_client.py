@@ -4,7 +4,7 @@ import redis as redis
 
 from src.allocation import config
 
-r = redis.Redis(**config.get_redis_host_port())
+r = redis.Redis(**config.get_redis_host_and_port())
 
 
 def subscribe_to(channel):

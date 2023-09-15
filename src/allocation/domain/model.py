@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
+from sqlalchemy import orm
 
 from src.allocation.domain import events, commands
 
@@ -67,7 +68,11 @@ class Product:
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
-        self.events = []
+        self.events = [] # type: List[events.Event]
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self.events = [] # type: List[events.Event]
 
     def allocate(self, line: OrderLine) -> str:
         try:

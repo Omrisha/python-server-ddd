@@ -10,7 +10,7 @@ services:
     networks:
       - allocation
     depends_on:
-      - postgres
+      - postgresql
       - redis
     environment:
       - DB_HOST=postgres
