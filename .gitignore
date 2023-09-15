@@ -29,3 +29,4 @@ tests/integration/__pycache__/test_uow.cpython-311-pytest-7.2.2.pyc
 tests/unit/__pycache__/test_batches.cpython-311-pytest-7.2.2.pyc
 tests/unit/__pycache__/test_handlers.cpython-311-pytest-7.2.2.pyc
 tests/unit/__pycache__/test_product.cpython-311-pytest-7.2.2.pyc
+tests/integration/__pycache__/test_repository.cpython-311-pytest-7.2.2.pyc
