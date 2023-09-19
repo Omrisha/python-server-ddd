@@ -2,12 +2,12 @@ from sqlalchemy.orm import registry
 from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
 
-from src.allocation.domain import model
-from src.allocation.domain.model import OrderLine
+from allocation.domain import model
+from allocation.domain.model import OrderLine
 
 metadata = MetaData()
 
-mapper_registry = registry()
+mapper_registry = registry(metadata=metadata)
 
 order_lines = Table(
     "order_lines",

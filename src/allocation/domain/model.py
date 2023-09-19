@@ -3,7 +3,7 @@ from datetime import date
 from typing import Optional, List
 from sqlalchemy import orm
 
-from src.allocation.domain import events, commands
+from allocation.domain import events, commands
 
 
 @dataclass(unsafe_hash=True)

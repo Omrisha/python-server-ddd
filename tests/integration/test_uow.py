@@ -5,8 +5,8 @@ import traceback
 import pytest
 from sqlalchemy import text
 
-from src.allocation.domain import model
-from src.allocation.service_layer import unit_of_work
+from allocation.domain import model
+from allocation.service_layer import unit_of_work
 from tests.random_refs import random_sku, random_batch_ref, random_order_id
 
 

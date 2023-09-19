@@ -12,7 +12,7 @@ today = date.today()
 
 @pytest.fixture
 def sqlite_bus(sqlite_session_factory):
-    bus = bootstrap.bootstrap(
+    bus = bootstrap.bootstarp(
         start_orm=True,
         uow=unit_of_work.SqlAlchemyUnitOfWork(sqlite_session_factory),
         notifications=mock.Mock(),

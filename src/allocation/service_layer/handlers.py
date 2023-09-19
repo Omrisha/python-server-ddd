@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING
+from allocation.adapters import notifications
 
-from src.allocation.adapters import email, redis_eventpublisher
-from src.allocation.domain import model, events, commands
-from src.allocation.domain.model import OrderLine
-from src.allocation.service_layer import unit_of_work
+from allocation.adapters import redis_eventpublisher
+from allocation.domain import model, events, commands
+from allocation.domain.model import OrderLine
+from allocation.service_layer import unit_of_work
 
 if TYPE_CHECKING:
     from . import unit_of_work
@@ -70,7 +71,7 @@ def change_batch_quantity(
 def send_out_of_stock_notification(
         event: events.OutOfStock
 ):
-    email.send_email(
+    notifications.send_email(
         "stock@make.com",
         f"Out of stock for {event.sku}",
     )
@@ -123,3 +124,22 @@ def remove_allocation_from_read_model(
             dict(orderid=event.orderid, sku=event.sku)
         )
         uow.commit()
+
+
+COMMAND_HANDLERS = {
+    commands.Allocate: allocate,
+    commands.CreateBatch: add_batch,
+    commands.Deallocate: deallocate,
+    commands.ChangeBatchQuantity: change_batch_quantity,
+}
+
+EVENT_HANDLERS = {
+    events.OutOfStock: [send_out_of_stock_notification],
+    events.Allocated: [
+        publish_allocated_event,
+        add_allocations_to_read_model
+    ],
+    events.Deallocated: [
+        remove_allocation_from_read_model
+    ]
+}

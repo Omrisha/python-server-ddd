@@ -1,7 +1,7 @@
 import abc
 from typing import Set
-from src.allocation.adapters import orm
-from src.allocation.domain import model
+from allocation.adapters import orm
+from allocation.domain import model
 
 
 class AbstractRepository(abc.ABC):

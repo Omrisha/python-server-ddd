@@ -2,7 +2,7 @@ import json
 
 import redis as redis
 
-from src.allocation import config
+from allocation import config
 
 r = redis.Redis(**config.get_redis_host_and_port())
 

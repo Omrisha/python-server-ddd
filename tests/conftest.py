@@ -12,8 +12,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, clear_mappers
 from tenacity import retry, stop_after_delay
 
-from src.allocation import config
-from src.allocation.adapters.orm import metadata, start_mappers
+from allocation import config
+from allocation.adapters.orm import metadata, start_mappers
 
 
 @pytest.fixture
@@ -21,6 +21,11 @@ def in_memory_db():
     engine = create_engine("sqlite:///:memory:")
     metadata.create_all(engine)
     return engine
+
+
+@pytest.fixture
+def sqlite_session_factory(in_memory_db):
+    yield sessionmaker(bind=in_memory_db)
 
 
 @pytest.fixture
