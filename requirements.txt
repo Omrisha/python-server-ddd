@@ -1,8 +1,14 @@
-pytest~=7.2.2
+# app
 sqlalchemy~=2.0.7
+sqlalchemy_orm
 flask~=2.2.3
 psycopg2-binary
-requests~=2.28.2
-sqlalchemy_orm
 redis~=4.5.4
+
+# dev/tests
+pytest~=7.2.2
+pytest-icdiff
+mypy
+pylint
+requests~=2.28.2
 tenacity~=8.2.2
